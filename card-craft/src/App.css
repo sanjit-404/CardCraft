@@ -1,0 +1,284 @@
+/* ---- Base: the dark theme ---- */
+* {
+  box-sizing: border-box; /* padding is included in an element's width */
+}
+
+body {
+  margin: 0;
+  background: #0f0f14;
+  color: #e8e8e8;
+  font-family: system-ui, sans-serif;
+  line-height: 1.4;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 12px;
+}
+
+h2 {
+  font-size: 1.25rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+}
+
+/* ---- Form controls ---- */
+input,
+select,
+button {
+  font: inherit;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #1a1a1f;
+  color: #e8e8e8;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 8px 12px;
+}
+
+button {
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: #666;
+}
+
+button:disabled,
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: white;
+}
+
+button.danger {
+  color: salmon;
+}
+
+/* A button that looks like a link (used to switch login/register) */
+button.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #8b85ff;
+  text-decoration: underline;
+}
+
+fieldset {
+  margin: 0;
+}
+
+legend {
+  padding: 0 6px;
+}
+
+/* ---- Text styles ---- */
+.hint {
+  color: #9a9aa8;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.error-text {
+  color: salmon;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.valid-text {
+  color: lightgreen;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.notice-text {
+  color: #f0c36d;
+  font-size: 13px;
+  margin: 0 0 8px;
+}
+
+/* ---- Reusable building blocks ---- */
+.panel {
+  background: #16161d;
+  border: 1px solid #26262f;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+/* Fields sit side by side when there is room, and stack on a phone */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---- Login / register screen ---- */
+.auth {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 40px 16px;
+  text-align: center;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  text-align: left;
+}
+
+/* ---- Logged-in layout ---- */
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #26262f;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0; /* lets a long email shrink instead of overflowing */
+}
+
+.header-email {
+  color: #9a9aa8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Phone: editor on top, list below. Wide screen: side by side. */
+.workspace {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 900px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+}
+
+.workspace-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* The canvas measures this box's width to shrink on small screens */
+.canvas-wrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ---- AI review ---- */
+.review-result {
+  margin-top: 12px;
+}
+
+.review-score {
+  font-size: 1.1rem;
+  margin: 0 0 8px;
+}
+
+.review-result ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+/* ---- My designs list ---- */
+.design-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.design-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #26262f;
+  border-radius: 8px;
+}
+
+.design-item.open {
+  border-color: #4f46e5; /* highlight the design open in the editor */
+}
+
+.design-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+
+.status-badge {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #33333d;
+}
+
+.status-badge.final {
+  background: #1f4d2e;
+  color: lightgreen;
+}
