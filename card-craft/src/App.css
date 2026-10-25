@@ -1,135 +1,327 @@
-/* ---- Base: the dark theme ---- */
+/* =========================================================
+   CardCraft: premium dark "card studio" theme
+   ========================================================= */
+
+/* ---- Design tokens: colours, fonts, radii in one place ---- */
+:root {
+  --bg: #07070b;
+  --text: #ecebf5;
+  --muted: #a4a3b8;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --field-bg: rgba(255, 255, 255, 0.04);
+
+  --accent: #7c5cff;
+  --accent-light: #b39dff;
+  --accent-gradient: linear-gradient(135deg, #9273ff 0%, #6a4cff 100%);
+  --danger: #ff8191;
+  --success: #5ee0a0;
+  --warning: #ffcf6b;
+
+  --font-display: 'Syne', 'Manrope', system-ui, sans-serif;
+  --font-ui: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, monospace;
+
+  --radius-sm: 10px;
+  --radius-lg: 18px;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box; /* padding is included in an element's width */
 }
 
 body {
   margin: 0;
-  background: #0f0f14;
-  color: #e8e8e8;
-  font-family: system-ui, sans-serif;
-  line-height: 1.4;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
 h3 {
-  margin: 0 0 12px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 h2 {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
 }
 
-h3 {
-  font-size: 1.05rem;
-}
-
-/* ---- Form controls ---- */
-input,
-select,
-button {
-  font: inherit;
-  font-size: 14px;
-  border-radius: 6px;
-  border: 1px solid #333;
-  background: #1a1a1f;
-  color: #e8e8e8;
-}
-
-input,
-select {
-  width: 100%;
-  padding: 8px 12px;
-}
-
-button {
-  padding: 8px 14px;
-  cursor: pointer;
-}
-
-button:hover:not(:disabled) {
-  border-color: #666;
-}
-
-button:disabled,
-select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-button.primary {
-  background: #4f46e5;
-  border-color: #4f46e5;
-  color: white;
-}
-
-button.danger {
-  color: salmon;
-}
-
-/* A button that looks like a link (used to switch login/register) */
-button.link-button {
-  border: none;
-  background: none;
-  padding: 0;
-  color: #8b85ff;
-  text-decoration: underline;
-}
-
-fieldset {
+p {
   margin: 0;
 }
 
-legend {
-  padding: 0 6px;
+/* Hidden on screen but still read by screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-/* ---- Text styles ---- */
+/* A clear ring around whatever the keyboard is on */
+:focus-visible {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 3px;
+}
+
+/* ---- Animated background: drifting glowing orbs over a faint dot grid ---- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+  background-size: 28px 28px;
+}
+
+.orb {
+  position: absolute;
+  width: 55vmax;
+  height: 55vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.35;
+  animation: drift 30s ease-in-out infinite alternate;
+}
+
+.orb-1 {
+  top: -25vmax;
+  left: -15vmax;
+  background: radial-gradient(circle, #6a4cff, transparent 65%);
+}
+
+.orb-2 {
+  top: 10vmax;
+  right: -25vmax;
+  background: radial-gradient(circle, #1f7ae0, transparent 65%);
+  animation-duration: 38s;
+  animation-delay: -10s;
+}
+
+.orb-3 {
+  bottom: -30vmax;
+  left: 20vmax;
+  background: radial-gradient(circle, #c0399f, transparent 65%);
+  opacity: 0.22;
+  animation-duration: 44s;
+  animation-delay: -20s;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6vmax, 4vmax) scale(1.1);
+  }
+  100% {
+    transform: translate(-4vmax, 8vmax) scale(0.95);
+  }
+}
+
+/* ---- Glass panels ---- */
+.glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 60px -30px rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Things fade and slide up into place when they appear.
+   --i staggers lists: each item starts a little later. */
+.rise {
+  animation: rise 0.55s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* ---- Small text styles ---- */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-light);
+}
+
 .hint {
-  color: #9a9aa8;
+  color: var(--muted);
   font-size: 13px;
-  margin: 4px 0 0;
 }
 
-.error-text {
-  color: salmon;
-  font-size: 13px;
-  margin: 4px 0 0;
+.accent-text {
+  background: linear-gradient(120deg, #c3b2ff, #7c5cff 60%, #5aa8ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.valid-text {
-  color: lightgreen;
-  font-size: 13px;
-  margin: 4px 0 0;
+.alert {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
 }
 
-.notice-text {
-  color: #f0c36d;
-  font-size: 13px;
-  margin: 0 0 8px;
+.alert-error {
+  background: rgba(255, 129, 145, 0.1);
+  border: 1px solid rgba(255, 129, 145, 0.35);
+  color: #ffc2ca;
 }
 
-/* ---- Reusable building blocks ---- */
-.panel {
-  background: #16161d;
-  border: 1px solid #26262f;
-  border-radius: 10px;
-  padding: 16px;
+.alert-notice {
+  background: rgba(255, 207, 107, 0.1);
+  border: 1px solid rgba(255, 207, 107, 0.35);
+  color: #ffe2a6;
 }
 
-.field {
+.pill-row {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.pill-valid {
+  color: var(--success);
+  border-color: rgba(94, 224, 160, 0.4);
+  background: rgba(94, 224, 160, 0.08);
+}
+
+.pill-invalid {
+  color: var(--danger);
+  border-color: rgba(255, 129, 145, 0.4);
+  background: rgba(255, 129, 145, 0.08);
+}
+
+/* ---- Buttons ---- */
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    transform 0.15s var(--ease-out),
+    background-color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    filter 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+}
+
+.btn-primary {
+  background: var(--accent-gradient);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 10px 28px -10px rgba(124, 92, 255, 0.8);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  border-color: transparent;
+  box-shadow: 0 14px 34px -10px rgba(124, 92, 255, 0.95);
+}
+
+/* After a successful save the button briefly turns green */
+.btn-primary.is-saved {
+  background: linear-gradient(135deg, #3fcf8e, #23a76c);
+  box-shadow: 0 10px 28px -10px rgba(63, 207, 142, 0.7);
+}
+
+.btn-accent {
+  background: rgba(124, 92, 255, 0.14);
+  border-color: rgba(124, 92, 255, 0.5);
+  color: #ddd3ff;
+}
+
+.btn-accent:hover:not(:disabled) {
+  background-color: rgba(124, 92, 255, 0.24);
+  border-color: rgba(160, 135, 255, 0.8);
+}
+
+.btn-danger {
+  color: var(--danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: rgba(255, 129, 145, 0.1);
+  border-color: rgba(255, 129, 145, 0.45);
+}
+
+.btn-small {
+  padding: 7px 12px;
   font-size: 13px;
 }
 
-/* Fields sit side by side when there is room, and stack on a phone */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+.btn-block {
+  width: 100%;
+  padding: 13px 16px;
+  font-size: 15px;
 }
 
 .button-row {
@@ -138,147 +330,1165 @@ legend {
   gap: 8px;
 }
 
-/* ---- Login / register screen ---- */
-.auth {
-  max-width: 400px;
+/* A button that looks like a link (used to switch login/register) */
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent-light);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---- Form fields ---- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.field-error {
+  font-size: 12.5px;
+  color: var(--danger);
+}
+
+input,
+select {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background-color: var(--field-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14.5px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+}
+
+input::placeholder {
+  color: #77768a;
+}
+
+input:hover,
+select:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+/* Fields get a soft accent ring instead of the outline when focused */
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background-color: rgba(124, 92, 255, 0.06);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.28);
+}
+
+input[aria-invalid='true'] {
+  border-color: rgba(255, 129, 145, 0.6);
+}
+
+input.mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+/* Custom dropdown: hide the browser arrow and draw our own chevron */
+select {
+  appearance: none;
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23b39dff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+option {
+  background: #15151e;
+  color: var(--text);
+}
+
+/* Fields sit side by side when there is room, and stack on a phone */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+/* ---- Landing / login page ---- */
+.landing {
+  display: grid;
+  gap: 40px;
+  align-items: center;
+  max-width: 1180px;
+  min-height: 100vh;
   margin: 0 auto;
   padding: 40px 16px;
-  text-align: center;
+}
+
+@media (min-width: 960px) {
+  .landing {
+    grid-template-columns: minmax(0, 1.15fr) 420px;
+    gap: 64px;
+    padding: 48px 32px;
+  }
+}
+
+.landing-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.landing-title {
+  font-size: clamp(2.3rem, 6vw, 4.1rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.landing-pitch {
+  max-width: 34rem;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.feature-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feature-list li {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.feature-list li::before {
+  content: '✦ ';
+  color: var(--accent-light);
+}
+
+.demo-stage {
+  margin-top: 18px;
+  perspective: 1000px;
+}
+
+.demo-card {
+  width: min(400px, 100%);
+  animation:
+    demo-in 0.7s var(--ease-out) both,
+    float 7s ease-in-out infinite;
+}
+
+@keyframes demo-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotateX(8deg) rotateY(-12deg);
+  }
+  50% {
+    transform: translateY(-12px) rotateX(4deg) rotateY(-4deg);
+  }
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 20px;
-  text-align: left;
+  gap: 16px;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 28px 24px;
+}
+
+.auth-form h2 {
+  margin-top: 4px;
+  font-size: 1.6rem;
+}
+
+.switch-mode {
+  text-align: center;
+}
+
+/* ---- Brand mark (logo text in the header and landing page) ---- */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* A tiny card shape, drawn with CSS */
+.brand-glyph {
+  position: relative;
+  width: 28px;
+  height: 18px;
+  border-radius: 5px;
+  background: var(--accent-gradient);
+  box-shadow: 0 4px 14px -4px rgba(124, 92, 255, 0.9);
+}
+
+.brand-glyph::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 4px;
+  width: 7px;
+  height: 5px;
+  border-radius: 1.5px;
+  background: #f3d68b;
 }
 
 /* ---- Logged-in layout ---- */
 .app {
-  max-width: 1100px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px 12px 56px;
+}
+
+@media (min-width: 640px) {
+  .app {
+    padding: 16px 24px 64px;
+  }
 }
 
 .header {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 16px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #26262f;
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 1.5rem;
+  padding: 10px 12px 10px 16px;
+  margin-bottom: 24px;
+  border-radius: 16px;
 }
 
 .header-user {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0; /* lets a long email shrink instead of overflowing */
 }
 
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+}
+
 .header-email {
-  color: #9a9aa8;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--muted);
+  font-size: 13.5px;
 }
 
-/* Phone: editor on top, list below. Wide screen: side by side. */
-.workspace {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-
-@media (min-width: 900px) {
-  .workspace {
-    grid-template-columns: minmax(0, 1fr) 340px;
-    align-items: start;
+@media (max-width: 480px) {
+  .header-email {
+    display: none;
   }
 }
 
-.workspace-editor {
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* ---- Studio: card in the centre, controls in a side panel ---- */
+/* Phone: the card comes first, then the controls. Desktop: controls on the left. */
+.studio {
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 960px) {
+  .studio {
+    grid-template-columns: 360px minmax(0, 1fr);
+    grid-template-areas: 'controls stage';
+    align-items: start;
+    gap: 32px;
+  }
+
+  .stage-area {
+    grid-area: stage;
+  }
+
+  .control-panel {
+    grid-area: controls;
+    position: sticky;
+    top: 88px;
+    max-height: calc(100vh - 104px);
+    overflow-y: auto;
+  }
+}
+
+.stage-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.stage-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stage-title {
+  margin-top: 2px;
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.stage-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+}
+
+.control-group {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 
-.editor {
+.control-group legend {
+  padding: 0;
+  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.save-bar {
+  position: sticky;
+  bottom: -20px;
+  margin: 0 -20px -20px;
+  padding: 16px 20px 20px;
+  background: linear-gradient(180deg, transparent, rgba(12, 12, 18, 0.92) 30%);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* ---- The hero card ---- */
+.card-hero {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: center;
+  padding: 28px 0 36px;
 }
 
-/* The canvas measures this box's width to shrink on small screens */
-.canvas-wrapper {
+/* A soft glow in the finish's colour behind the card */
+.card-hero::before {
+  content: '';
+  position: absolute;
+  inset: 18% 12%;
+  border-radius: 50%;
+  background: var(--glow);
+  filter: blur(60px);
+  opacity: 0.9;
+  transition: background 0.6s;
+}
+
+.tilt-card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.25s var(--ease-out);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.06) inset,
+    0 40px 70px -28px rgba(0, 0, 0, 0.9),
+    0 18px 30px -18px rgba(0, 0, 0, 0.8);
+  will-change: transform;
+}
+
+/* A soft band of light that sweeps across the card every few seconds */
+.card-sheen,
+.mini-sheen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none; /* clicks and drags go through to the canvas */
+  mix-blend-mode: overlay;
+}
+
+.card-sheen::before,
+.mini-sheen::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -70%;
+  width: 45%;
+  height: 200%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 170, 230, 0.35) 35%,
+    rgba(255, 255, 255, 0.75) 50%,
+    rgba(150, 220, 255, 0.35) 65%,
+    transparent 100%
+  );
+  transform: rotate(12deg);
+  animation: sheen 7s ease-in-out infinite;
+}
+
+@keyframes sheen {
+  0%,
+  15% {
+    left: -70%;
+  }
+  60%,
+  100% {
+    left: 130%;
+  }
+}
+
+/* A light spot that follows the mouse on the tilted card */
+.card-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.22), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tilt-card.is-hovered .card-glare {
+  opacity: 1;
+}
+
+/* ---- Mini card (gallery thumbnails and the landing demo) ---- */
+.mini-card {
+  position: relative;
+  container-type: inline-size; /* children size their text with cqw units */
+  aspect-ratio: 400 / 252;
   width: 100%;
-  max-width: 400px;
+  overflow: hidden;
+  border-radius: 4% / 6.35%; /* same 16px corners as the real card */
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 22px 40px -22px rgba(0, 0, 0, 0.9),
+    0 10px 30px -18px var(--glow);
+}
+
+/* Soft light spot, like on the big card */
+.mini-card::before {
+  content: '';
+  position: absolute;
+  inset: -40% -20% auto auto;
+  width: 90%;
+  height: 120%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent 65%);
+}
+
+.mini-chip {
+  position: absolute;
+  left: 7%;
+  top: 17.5%;
+  width: 12.5%;
+  height: 15%;
+  border-radius: 1.75cqw;
+  background: linear-gradient(135deg, #f6dd92, #c9973a 50%, #f0cf7a);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.mini-logos {
+  position: absolute;
+  top: 9.5%;
+  right: 6%;
+  display: flex;
+  gap: 2cqw;
+}
+
+.mini-logos.stacked {
+  flex-direction: column;
+}
+
+.mini-logo {
+  width: 10cqw;
+  height: 10cqw;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.6cqw rgba(255, 255, 255, 0.5);
+}
+
+.mini-number {
+  position: absolute;
+  left: 7%;
+  top: 58%;
+  font-family: var(--font-mono);
+  font-size: 5.75cqw;
+  font-weight: 700;
+  letter-spacing: 0.25cqw;
+  white-space: nowrap;
+  text-shadow: 0.25cqw 0.35cqw 0.4cqw rgba(0, 0, 0, 0.35);
+}
+
+.mini-name {
+  position: absolute;
+  left: 7%;
+  bottom: 9%;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 3.75cqw;
+  font-weight: 700;
+  letter-spacing: 0.4cqw;
+}
+
+.mini-network {
+  position: absolute;
+  right: 6%;
+  bottom: 8%;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.network-visa {
+  font-family: var(--font-display);
+  font-size: 7.5cqw;
+  font-style: italic;
+}
+
+.network-mastercard {
+  font-size: 4.5cqw;
+}
+
+.network-amex {
+  font-family: var(--font-display);
+  font-size: 6cqw;
+  letter-spacing: 1cqw;
+}
+
+.network-rupay {
+  font-size: 6cqw;
+  font-style: italic;
 }
 
 /* ---- AI review ---- */
-.review-result {
-  margin-top: 12px;
-}
-
-.review-score {
-  font-size: 1.1rem;
-  margin: 0 0 8px;
-}
-
-.review-result ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-/* ---- My designs list ---- */
-.design-list ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.review-panel {
   display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+}
+
+.review-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.review-placeholder {
+  padding: 16px 20px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.review-loading {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.review-loading-lines {
+  display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 10px;
 }
 
-.design-item {
+.review-result {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  border: 1px solid #26262f;
-  border-radius: 8px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
 }
 
-.design-item.open {
-  border-color: #4f46e5; /* highlight the design open in the editor */
+.score-ring {
+  position: relative;
+  flex-shrink: 0;
+  width: 112px;
+  height: 112px;
+  --tone: var(--accent-light);
 }
 
-.design-info {
+.score-ring.tone-low {
+  --tone: var(--danger);
+}
+
+.score-ring.tone-mid {
+  --tone: var(--warning);
+}
+
+.score-ring.tone-high {
+  --tone: var(--success);
+}
+
+.score-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* start filling from the top */
+}
+
+.score-track,
+.score-fill {
+  fill: none;
+  stroke-width: 8;
+}
+
+.score-track {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.score-fill {
+  stroke: var(--tone);
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px var(--tone));
+  animation: ring-fill 1.3s var(--ease-out) both;
+}
+
+/* Starts empty and fills to the score set on the element */
+@keyframes ring-fill {
+  from {
+    stroke-dashoffset: var(--ring-length);
+  }
+}
+
+.score-value {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  animation: rise 0.6s var(--ease-out) 0.4s both;
+}
+
+.score-value small {
+  position: absolute;
+  bottom: 30px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Spinner version of the ring while waiting */
+.score-ring.is-loading {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 6px solid rgba(255, 255, 255, 0.08);
+  border-top-color: var(--accent);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tips {
+  display: grid;
+  flex: 1;
+  min-width: min(100%, 240px);
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 14px;
+  animation-delay: calc(0.3s + var(--i, 0) * 90ms);
+}
+
+.tip-number {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(124, 92, 255, 0.2);
+  color: var(--accent-light);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ---- Finish swatches ---- */
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 12px 8px;
+}
+
+.swatch {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  overflow-wrap: anywhere;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* The real radio button is invisible but still works with the keyboard */
+.swatch input,
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.swatch-chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+    0 6px 14px -6px rgba(0, 0, 0, 0.8);
+  transition:
+    transform 0.2s var(--ease-out),
+    box-shadow 0.2s;
+}
+
+.swatch:hover .swatch-chip {
+  transform: scale(1.08);
+}
+
+.swatch input:checked + .swatch-chip {
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent-light),
+    0 6px 18px -4px rgba(124, 92, 255, 0.7);
+}
+
+.swatch input:focus-visible + .swatch-chip {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 5px;
+}
+
+.swatch-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.swatch input:checked ~ .swatch-label {
+  color: var(--text);
+}
+
+/* ---- Segmented control (layout switch) ---- */
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--field-bg);
+}
+
+.segmented label {
+  position: relative;
+  cursor: pointer;
+}
+
+.segmented span {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 7px;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.segmented label:hover span {
+  color: var(--text);
+}
+
+.segmented input:checked + span {
+  background: var(--accent-gradient);
+  color: #fff;
+  box-shadow: 0 6px 16px -8px rgba(124, 92, 255, 0.9);
+}
+
+.segmented input:focus-visible + span {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 2px;
+}
+
+/* ---- My designs gallery ---- */
+.gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gallery-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gallery-head h2 {
+  margin-top: 2px;
+  font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+  font-weight: 800;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 32px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gallery-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  transition: opacity 0.2s;
+}
+
+.gallery-item.is-busy {
+  opacity: 0.55;
+}
+
+.thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 12px;
+  transition: transform 0.3s var(--ease-out);
+}
+
+.thumb:hover:not(:disabled) {
+  transform: translateY(-5px) rotate(-1deg);
+}
+
+.thumb:active:not(:disabled) {
+  transform: translateY(-2px) scale(0.98);
+}
+
+.gallery-item.is-open .mini-card {
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent-light),
+    0 22px 40px -22px rgba(0, 0, 0, 0.9);
+}
+
+/* Badges hang off the bottom edge of the thumbnail */
+.status-badge,
+.open-badge {
+  position: absolute;
+  bottom: -10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-strong);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .status-badge {
-  align-self: flex-start;
-  margin-top: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  background: #33333d;
+  left: 12px;
+  background: rgba(30, 30, 42, 0.9);
+  color: #d0cfe0;
 }
 
 .status-badge.final {
-  background: #1f4d2e;
-  color: lightgreen;
+  background: rgba(26, 70, 48, 0.92);
+  border-color: rgba(94, 224, 160, 0.45);
+  color: var(--success);
+}
+
+.open-badge {
+  right: 12px;
+  background: rgba(70, 50, 150, 0.92);
+  border-color: rgba(179, 157, 255, 0.5);
+  color: #e6deff;
+}
+
+.gallery-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+  min-width: 0;
+}
+
+.gallery-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.gallery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* A dashed outline of a card, as an "empty" picture */
+.empty-card {
+  width: 150px;
+  aspect-ratio: 400 / 252;
+  border-radius: 10px;
+  border: 2px dashed rgba(255, 255, 255, 0.18);
+}
+
+/* ---- Skeleton loaders (shimmering placeholders) ---- */
+.skeleton,
+.skeleton-line {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-card {
+  aspect-ratio: 400 / 252;
+  border-radius: 12px;
+}
+
+.skeleton-line {
+  display: block;
+  width: 70%;
+  height: 12px;
+  border-radius: 6px;
+}
+
+.skeleton-line.short {
+  width: 40%;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---- Toasts (pop-up messages) ---- */
+.toaster {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  .toaster {
+    left: auto;
+    align-items: flex-end;
+  }
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 380px);
+  padding: 12px 12px 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
+  background: rgba(20, 20, 30, 0.88);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.9);
+  font-size: 14px;
+  pointer-events: auto;
+  animation: toast-in 0.4s var(--ease-out) both;
+}
+
+.toast p {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
+
+.toast-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.toast-success .toast-icon {
+  background: rgba(94, 224, 160, 0.18);
+  color: var(--success);
+}
+
+.toast-error {
+  border-color: rgba(255, 129, 145, 0.4);
+}
+
+.toast-error .toast-icon {
+  background: rgba(255, 129, 145, 0.18);
+  color: var(--danger);
+}
+
+.toast-info .toast-icon {
+  background: rgba(124, 92, 255, 0.2);
+  color: var(--accent-light);
+}
+
+.toast-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.toast-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+/* ---- Respect "reduce motion": no drifting, sweeping, floating or tilting ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .card-sheen::before,
+  .mini-sheen::before,
+  .card-glare {
+    display: none;
+  }
+
+  .demo-card {
+    animation: none;
+    transform: rotateX(6deg) rotateY(-8deg);
+  }
 }

@@ -2,6 +2,7 @@ import './App.css'
 import { useEffect, useState } from 'react'
 import AuthForm from './components/AuthForm'
 import Header from './components/Header'
+import Toaster from './components/Toaster'
 import Workspace from './components/Workspace'
 import { setUnauthorizedHandler } from './api'
 import { clearSession, getSession, saveSession } from './session'
@@ -36,16 +37,28 @@ function App() {
     setNotice('')
   }
 
-  if (!session) {
-    return <AuthForm notice={notice} onLoggedIn={handleLoggedIn} />
-  }
-
   return (
-    <div className="app">
-      <Header email={session.user.email} onLogout={handleLogout} />
-      {/* The key makes a different user get a completely fresh workspace */}
-      <Workspace key={session.user.id} />
-    </div>
+    <>
+      {/* Slowly drifting glowing orbs behind everything (decoration only) */}
+      <div className="backdrop" aria-hidden="true">
+        <span className="orb orb-1" />
+        <span className="orb orb-2" />
+        <span className="orb orb-3" />
+      </div>
+
+      {session ? (
+        <div className="app">
+          <Header email={session.user.email} onLogout={handleLogout} />
+          {/* The key makes a different user get a completely fresh workspace */}
+          <Workspace key={session.user.id} />
+        </div>
+      ) : (
+        <AuthForm notice={notice} onLoggedIn={handleLoggedIn} />
+      )}
+
+      {/* Pop-up messages (saved, deleted, errors) */}
+      <Toaster />
+    </>
   )
 }
 

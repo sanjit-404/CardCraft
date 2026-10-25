@@ -2,24 +2,29 @@ import { useRef, useState } from 'react'
 import type Konva from 'konva'
 import CardCanvas from './CardCanvas'
 import CoBrandPicker from './CoBrandPicker'
+import FinishPicker from './FinishPicker'
 import ReviewPanel from './ReviewPanel'
 import { createCard, describeError, updateCard } from '../api'
 import { cardNumberSchema, nameSchema } from '../cardSchema'
 import { detectNetwork, formatCardNumber, maskCardNumber, NETWORK_NAMES, onlyDigits } from '../cardNumber'
 import { downloadPdf, downloadPng } from '../exportCard'
+import { getSavedFinish, resolveFinish, saveFinish, type FinishId } from '../finishes'
+import { showToast } from '../toast'
 import { DEFAULT_CO_BRAND, type Card, type CoBrand, type Point } from '../types'
 
 type EditorProps = {
   initialCard: Card | null // the design that was opened, or null for a new one
   onSaved: (card: Card) => void // tells the list about the saved card
+  onNewDesign: () => void
 }
 
 const DEFAULT_NAME_POS: Point = { x: 24, y: 220 }
 
-// The design editor: the form, the live canvas, saving, exports and the AI review.
+// The design studio: the card on centre stage, the controls in a side panel,
+// plus saving, exports and the AI review.
 // The parent gives it a new "key" when you open a design or start a new one,
 // so React starts it fresh with that design's values.
-function Editor({ initialCard, onSaved }: EditorProps) {
+function Editor({ initialCard, onSaved, onNewDesign }: EditorProps) {
   // savedCard is this design as the server last saved it (null until the first save)
   const [savedCard, setSavedCard] = useState<Card | null>(initialCard)
   const [name, setName] = useState(initialCard?.name ?? '')
@@ -28,10 +33,11 @@ function Editor({ initialCard, onSaved }: EditorProps) {
   const [cardNumber, setCardNumber] = useState('')
   const [namePos, setNamePos] = useState<Point>(initialCard?.namePos ?? DEFAULT_NAME_POS)
   const [coBrand, setCoBrand] = useState<CoBrand>(initialCard?.coBrand ?? DEFAULT_CO_BRAND)
+  // Visual only: never sent to the backend, remembered in this browser
+  const [finishId, setFinishId] = useState<FinishId>(initialCard ? getSavedFinish(initialCard._id) : 'auto')
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [saveError, setSaveError] = useState('')
-  const [exportStatus, setExportStatus] = useState<'idle' | 'working' | 'error'>('idle')
+  const [isMakingPdf, setIsMakingPdf] = useState(false)
 
   // The Konva stage, so we can turn the canvas into a PNG or PDF
   const stageRef = useRef<Konva.Stage>(null)
@@ -49,11 +55,12 @@ function Editor({ initialCard, onSaved }: EditorProps) {
   // ---- What the canvas shows ----
   const typedDigits = onlyDigits(cardNumber)
   const network = typedDigits ? detectNetwork(typedDigits) : (savedCard?.network ?? 'unknown')
+  const finish = resolveFinish(finishId, network)
   let numberText = '•••• •••• •••• ••••'
   if (hasTypedNumber) numberText = cardNumber
   else if (savedCard) numberText = maskCardNumber(savedCard.cardLast4, savedCard.network)
 
-  // Any edit makes the "Design saved!" message out of date, so clear it
+  // Any edit makes the "saved" state out of date, so reset it
   function markEdited() {
     setSaveStatus('idle')
   }
@@ -63,11 +70,11 @@ function Editor({ initialCard, onSaved }: EditorProps) {
     if (numberResult && !numberResult.success) return
     // The checked number as digits only, or undefined if the box was left blank
     const newNumber = numberResult?.data
-    // coBrand is always sent whole (all three fields), as the backend requires
+    // coBrand is always sent whole (all three fields), as the backend requires.
+    // The finish is NOT included: it only lives in this browser.
     const fields = { name: nameResult.data, namePos, coBrand }
 
     setSaveStatus('saving')
-    setSaveError('')
     try {
       let card: Card
       if (savedCard === null) {
@@ -77,14 +84,16 @@ function Editor({ initialCard, onSaved }: EditorProps) {
         // Opened design: PUT. Only send cardNumber if the user typed a new one.
         card = await updateCard(savedCard._id, newNumber ? { ...fields, cardNumber: newNumber } : fields)
       }
+      saveFinish(card._id, finishId)
       setSavedCard(card)
       // The server only kept the last 4 digits, so show the masked number from now on
       setCardNumber('')
       setSaveStatus('saved')
+      showToast(isNew ? 'Design saved to My designs' : 'Changes saved', 'success')
       onSaved(card)
     } catch (err) {
-      setSaveError(describeError(err))
       setSaveStatus('error')
+      showToast(`Couldn't save: ${describeError(err)}`, 'error')
     }
   }
 
@@ -92,111 +101,149 @@ function Editor({ initialCard, onSaved }: EditorProps) {
     if (!stageRef.current) return
     try {
       downloadPng(stageRef.current)
-      setExportStatus('idle')
+      showToast('PNG downloaded', 'success')
     } catch {
-      setExportStatus('error')
+      showToast("Couldn't create the PNG. Please try again.", 'error')
     }
   }
 
   async function handlePdf() {
     if (!stageRef.current) return
-    setExportStatus('working')
+    setIsMakingPdf(true)
     try {
       await downloadPdf(stageRef.current)
-      setExportStatus('idle')
+      showToast('PDF downloaded at real card size (85.6 × 54 mm)', 'success')
     } catch {
-      setExportStatus('error')
+      showToast("Couldn't create the PDF. Please try again.", 'error')
+    } finally {
+      setIsMakingPdf(false)
     }
   }
 
   let saveLabel = isNew ? 'Save design' : 'Save changes'
   if (saveStatus === 'saving') saveLabel = 'Saving…'
+  if (saveStatus === 'saved') saveLabel = '✓ Saved'
 
   return (
-    <section className="editor">
-      <h2>{isNew ? 'New design' : `Editing "${savedCard.name}"`}</h2>
+    <section className="studio">
+      {/* Centre stage: the card itself */}
+      <div className="stage-area">
+        <div className="stage-head rise">
+          <div>
+            <p className="eyebrow">{isNew ? 'New design' : 'Editing'}</p>
+            <h2 className="stage-title">{isNew ? 'Craft your card' : savedCard.name}</h2>
+          </div>
+          <button type="button" className="btn btn-ghost" onClick={onNewDesign}>
+            + New design
+          </button>
+        </div>
 
-      <CardCanvas
-        name={name}
-        numberText={numberText}
-        network={network}
-        namePos={namePos}
-        coBrand={coBrand}
-        stageRef={stageRef}
-        onNamePosChange={(pos) => {
-          setNamePos(pos)
-          markEdited()
-        }}
-      />
-      <p className="hint">Tip: drag the name on the card to move it.</p>
+        <CardCanvas
+          name={name}
+          numberText={numberText}
+          network={network}
+          finish={finish}
+          namePos={namePos}
+          coBrand={coBrand}
+          stageRef={stageRef}
+          onNamePosChange={(pos) => {
+            setNamePos(pos)
+            markEdited()
+          }}
+        />
 
-      <div className="panel">
-        <div className="form-grid">
+        <div className="stage-toolbar rise">
+          <p className="hint">Drag the name on the card to move it.</p>
+          <div className="button-row">
+            <button type="button" className="btn btn-ghost" onClick={handlePng}>
+              ↓ PNG
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={handlePdf} disabled={isMakingPdf}>
+              {isMakingPdf ? 'Making PDF…' : '↓ PDF (real size)'}
+            </button>
+          </div>
+        </div>
+
+        {/* The AI review needs a saved design, because the server reviews what it has stored */}
+        {savedCard ? (
+          <ReviewPanel key={savedCard._id} cardId={savedCard._id} />
+        ) : (
+          <p className="glass review-placeholder rise">✦ Save your design to unlock an AI design review.</p>
+        )}
+      </div>
+
+      {/* Side panel: all the controls */}
+      <aside className="glass control-panel rise" aria-label="Design controls">
+        <fieldset className="control-group">
+          <legend>Details</legend>
           <label className="field">
-            <span>Cardholder name</span>
+            <span className="field-label">Cardholder name</span>
             <input
               type="text"
               value={name}
               placeholder="e.g. Alex Kumar"
+              aria-invalid={nameError !== ''}
               onChange={(e) => {
                 setName(e.target.value)
                 markEdited()
               }}
             />
-            {nameError && <p className="error-text">{nameError}</p>}
+            {nameError && <span className="field-error">{nameError}</span>}
           </label>
 
           <label className="field">
-            <span>Card number</span>
+            <span className="field-label">Card number</span>
             <input
               type="text"
+              className="mono"
               inputMode="numeric"
               autoComplete="off"
               value={cardNumber}
               placeholder={savedCard ? `Leave blank to keep •••• ${savedCard.cardLast4}` : '4111 1111 1111 1111'}
+              aria-invalid={numberError !== ''}
               onChange={(e) => {
                 setCardNumber(formatCardNumber(e.target.value))
                 markEdited()
               }}
             />
-            {numberError && <p className="error-text">{numberError}</p>}
-            <p className="hint">Network: {NETWORK_NAMES[network]}</p>
+            {numberError && <span className="field-error">{numberError}</span>}
           </label>
+
+          <div className="pill-row">
+            <span className="pill">Network: {NETWORK_NAMES[network]}</span>
+            {/* Follows the same zod checks that decide whether we can save */}
+            <span className={`pill ${isValid ? 'pill-valid' : 'pill-invalid'}`}>{isValid ? '✓ Valid' : '✗ Invalid'}</span>
+          </div>
+        </fieldset>
+
+        <FinishPicker
+          value={finishId}
+          network={network}
+          onChange={(id) => {
+            setFinishId(id)
+            markEdited()
+          }}
+        />
+
+        <CoBrandPicker
+          coBrand={coBrand}
+          onChange={(next) => {
+            setCoBrand(next)
+            markEdited()
+          }}
+        />
+
+        <div className="save-bar">
+          <button
+            type="button"
+            className={`btn btn-primary btn-block ${saveStatus === 'saved' ? 'is-saved' : ''}`}
+            onClick={handleSave}
+            disabled={!isValid || saveStatus === 'saving'}
+          >
+            {saveLabel}
+          </button>
         </div>
-
-        {/* Follows the same zod checks that decide whether we can save */}
-        <p className={isValid ? 'valid-text' : 'error-text'}>{isValid ? '✓ Valid' : '✗ Invalid'}</p>
-      </div>
-
-      <CoBrandPicker
-        coBrand={coBrand}
-        onChange={(next) => {
-          setCoBrand(next)
-          markEdited()
-        }}
-      />
-
-      <div className="button-row">
-        <button type="button" className="primary" onClick={handleSave} disabled={!isValid || saveStatus === 'saving'}>
-          {saveLabel}
-        </button>
-        <button type="button" onClick={handlePng}>
-          Download PNG
-        </button>
-        <button type="button" onClick={handlePdf} disabled={exportStatus === 'working'}>
-          {exportStatus === 'working' ? 'Making PDF…' : 'Download PDF'}
-        </button>
-      </div>
-      {saveStatus === 'saved' && <p className="valid-text">Design saved!</p>}
-      {saveStatus === 'error' && <p className="error-text">Couldn't save: {saveError}</p>}
-      {exportStatus === 'error' && <p className="error-text">Couldn't create the file. Please try again.</p>}
-
-      {/* The AI review needs a saved design, because the server reviews what it has stored */}
-      {savedCard ? (
-        <ReviewPanel key={savedCard._id} cardId={savedCard._id} />
-      ) : (
-        <p className="hint">Save your design to get an AI review.</p>
-      )}
+      </aside>
     </section>
   )
 }

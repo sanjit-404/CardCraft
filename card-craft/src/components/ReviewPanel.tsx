@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { ApiError, describeError, reviewCard } from '../api'
 import type { Review } from '../types'
 
@@ -15,6 +15,39 @@ function reviewErrorMessage(err: unknown): string {
     return "You've asked for a lot of reviews. Please wait a minute and try again."
   }
   return describeError(err)
+}
+
+const RING_RADIUS = 42
+const RING_LENGTH = 2 * Math.PI * RING_RADIUS // the circle's full outline length
+
+// A circle that fills up to the score. CSS animates it from empty.
+function ScoreRing({ score }: { score: number }) {
+  const safeScore = Math.min(10, Math.max(0, score))
+  const offset = RING_LENGTH * (1 - safeScore / 10) // how much of the outline stays empty
+  let tone = 'low'
+  if (safeScore >= 8) tone = 'high'
+  else if (safeScore >= 5) tone = 'mid'
+
+  return (
+    <div className={`score-ring tone-${tone}`} role="img" aria-label={`Score ${safeScore} out of 10`}>
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle className="score-track" cx="50" cy="50" r={RING_RADIUS} />
+        <circle
+          className="score-fill"
+          cx="50"
+          cy="50"
+          r={RING_RADIUS}
+          strokeDasharray={RING_LENGTH}
+          strokeDashoffset={offset}
+          style={{ '--ring-length': RING_LENGTH } as CSSProperties}
+        />
+      </svg>
+      <span className="score-value">
+        {safeScore}
+        <small>/10</small>
+      </span>
+    </div>
+  )
 }
 
 // Sends the saved design to the AI reviewer and shows its score and tips.
@@ -36,28 +69,46 @@ function ReviewPanel({ cardId }: ReviewPanelProps) {
   }
 
   return (
-    <section className="panel">
-      <h3>AI design review</h3>
-      <p className="hint">Reviews the last saved version of this design.</p>
-      <button type="button" onClick={handleReview} disabled={status === 'loading'}>
-        {status === 'loading' ? 'Reviewing…' : 'AI review'}
-      </button>
+    <section className="glass review-panel rise">
+      <div className="review-head">
+        <div>
+          <p className="eyebrow">AI design review</p>
+          <p className="hint">Get a score and tips for the last saved version.</p>
+        </div>
+        <button type="button" className="btn btn-accent" onClick={handleReview} disabled={status === 'loading'}>
+          {status === 'loading' ? 'Reviewing…' : status === 'done' ? 'Review again' : '✦ AI review'}
+        </button>
+      </div>
 
-      {status === 'loading' && <p className="hint">This can take up to a minute. Hang tight!</p>}
-      {status === 'error' && <p className="error-text">{error}</p>}
+      {status === 'loading' && (
+        <div className="review-loading" aria-live="polite">
+          <div className="score-ring is-loading" aria-hidden="true" />
+          <div className="review-loading-lines">
+            <span className="skeleton-line" />
+            <span className="skeleton-line short" />
+            <p className="hint">Analysing your design… this can take up to a minute.</p>
+          </div>
+        </div>
+      )}
+
+      {status === 'error' && <p className="alert alert-error">{error}</p>}
+
       {status === 'done' && review && (
         <div className="review-result">
-          <p className="review-score">
-            Score: <strong>{review.score}</strong> / 10
-          </p>
+          <ScoreRing score={review.score} />
           {review.tips.length > 0 ? (
-            <ul>
+            <ul className="tips">
               {review.tips.map((tip, i) => (
-                <li key={i}>{tip}</li>
+                <li key={i} className="tip rise" style={{ '--i': i } as CSSProperties}>
+                  <span className="tip-number" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <p>{tip}</p>
+                </li>
               ))}
             </ul>
           ) : (
-            <p className="hint">No tips. Looks great!</p>
+            <p className="hint">No tips. This design is looking great!</p>
           )}
         </div>
       )}

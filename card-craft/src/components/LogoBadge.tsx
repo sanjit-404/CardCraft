@@ -1,18 +1,10 @@
 import { Circle, Ellipse, Group, Line, Star } from 'react-konva'
+import { BADGE_COLORS } from '../logos'
 import type { LogoId } from '../types'
 
 // Every badge is drawn in a 40 x 40 box: a coloured circle with a simple
 // white shape on top. These are generic shapes I made up, not real logos.
 export const BADGE_SIZE = 40
-
-const BADGE_COLORS: Record<LogoId, string> = {
-  orbit: '#6c63ff',
-  wave: '#2a9df4',
-  shield: '#e05d5d',
-  leaf: '#3cb371',
-  bolt: '#f0a500',
-  star: '#c06cd6',
-}
 
 type LogoBadgeProps = {
   logo: LogoId

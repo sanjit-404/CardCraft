@@ -5,6 +5,11 @@ type CoBrandPickerProps = {
   onChange: (coBrand: CoBrand) => void
 }
 
+const LAYOUTS: { value: CoBrandLayout; label: string }[] = [
+  { value: 'side-by-side', label: 'Side by side' },
+  { value: 'stacked', label: 'Stacked' },
+]
+
 // "orbit" -> "Orbit", for the dropdown labels
 function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
@@ -17,11 +22,11 @@ function toLogo(value: string): LogoId | null {
 
 function CoBrandPicker({ coBrand, onChange }: CoBrandPickerProps) {
   return (
-    <fieldset className="panel">
+    <fieldset className="control-group">
       <legend>Co-branding</legend>
       <div className="form-grid">
         <label className="field">
-          <span>Primary logo</span>
+          <span className="field-label">Primary logo</span>
           <select
             value={coBrand.primaryLogo ?? ''}
             onChange={(e) => {
@@ -40,7 +45,7 @@ function CoBrandPicker({ coBrand, onChange }: CoBrandPickerProps) {
         </label>
 
         <label className="field">
-          <span>Secondary logo (optional)</span>
+          <span className="field-label">Secondary logo</span>
           <select
             value={coBrand.secondaryLogo ?? ''}
             disabled={coBrand.primaryLogo === null}
@@ -54,17 +59,22 @@ function CoBrandPicker({ coBrand, onChange }: CoBrandPickerProps) {
             ))}
           </select>
         </label>
+      </div>
 
-        <label className="field">
-          <span>Layout</span>
-          <select
-            value={coBrand.layout}
-            onChange={(e) => onChange({ ...coBrand, layout: e.target.value as CoBrandLayout })}
-          >
-            <option value="side-by-side">Side by side</option>
-            <option value="stacked">Stacked</option>
-          </select>
-        </label>
+      {/* Layout as a two-button switch (radio buttons styled as a segmented control) */}
+      <div className="segmented" role="radiogroup" aria-label="Logo layout">
+        {LAYOUTS.map((layout) => (
+          <label key={layout.value}>
+            <input
+              type="radio"
+              name="layout"
+              value={layout.value}
+              checked={coBrand.layout === layout.value}
+              onChange={() => onChange({ ...coBrand, layout: layout.value })}
+            />
+            <span>{layout.label}</span>
+          </label>
+        ))}
       </div>
     </fieldset>
   )
