@@ -25,3 +25,7 @@ dist-ssr
 
 # Environment files (keep secrets and URLs out of git)
 .env
+
+.vercel
+.env*
+!.env.example
